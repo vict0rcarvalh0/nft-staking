@@ -9,6 +9,6 @@ pub struct StakeConfig {
     pub bump: u8,
 }
 
-impl Space for UserAccount {
+impl Space for StakeConfig {
     const INIT_SPACE: usize = 8 + 1 + 1 + 4 + 1 + 1;
 }
