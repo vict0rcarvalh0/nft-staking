@@ -14,11 +14,11 @@ declare_id!("HTZ275L8mFESgZSXo4b3EJAp45fgchDkrZEw8fY2UK8x");
 pub mod nft_staking {
     use super::*;
 
-    pub fn initialize_config(ctx: Context<InitializeConfig>, points_per_stake: u8, max_stake: u8, freeze_period: u32) -> Result<()> {
+    pub fn initialize_config(ctx: Context<InitConfig>, points_per_stake: u8, max_stake: u8, freeze_period: u32) -> Result<()> {
         ctx.accounts.initialize_config(points_per_stake, max_stake, freeze_period, &ctx.bumps)
     }
 
-    pub fn initialize_user(ctx: Context<Initialize>) -> Result<()> {
+    pub fn initialize_user(ctx: Context<InitUser>) -> Result<()> {
         ctx.accounts.initialize_user(&ctx.bumps)
     }
 
