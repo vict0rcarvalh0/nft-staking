@@ -226,4 +226,36 @@ describe("NFT Staking", () => {
       throw error;
     }
   })
+
+  it("unstake", async () => {
+    const accounts = {
+      user: accountsPublicKeys["user"],
+      mint: accountsPublicKeys["mint"],
+      mintAta: accountsPublicKeys["mint_ata"],
+      configAccount: accountsPublicKeys["config_account"],
+      stakeAccount: accountsPublicKeys["stake_account"],
+      userAccount: accountsPublicKeys["user_account"],
+      tokenProgram: accountsPublicKeys["token_program"],
+      metadataProgram: accountsPublicKeys["metadata_program"],
+      masterEditionAccount: accountsPublicKeys["master_edition_account"],
+    };
+
+    try {
+        await program.methods
+          .unstake()
+          .accounts(accounts)
+          .signers([user])
+          .rpc()
+          .then(confirm)
+          .then(log);
+      }
+     catch (error) {
+      if (error instanceof SendTransactionError) {
+        const logs = await error.getLogs(provider.connection);
+        console.log("Transaction Logs:", logs);
+      }
+      console.error("Error initializing farmlink:", error);
+      throw error;
+    }
+  })
 });
