@@ -54,28 +54,27 @@ describe("NFT Staking", () => {
   // Accounts
   const user = Keypair.generate();
   const admin = Keypair.generate();
-  const stake_token = Keypair.generate();
+  const stakeToken = Keypair.generate();
   let mint: PublicKey;
-  let mint_ata: any;
-  // let farmLink: PublicKey;
+  let mintAta: any;
 
-  const config_account = PublicKey.findProgramAddressSync(
+  const configAccount = PublicKey.findProgramAddressSync(
     [Buffer.from("config", "utf-8")],
     program.programId
   )[0];
-  const user_account = PublicKey.findProgramAddressSync(
+  const userAccount = PublicKey.findProgramAddressSync(
     [Buffer.from("user", "utf-8"), user.publicKey.toBuffer()],
     program.programId
   )[0];
-  const rewards_mint = getAssociatedTokenAddressSync(
-    stake_token.publicKey,
-    config_account,
+  const rewardsMint = getAssociatedTokenAddressSync(
+    stakeToken.publicKey,
+    configAccount,
     true
   );
-  const rewards_ata = getOrCreateAssociatedTokenAccount(
+  const rewardsAta = getOrCreateAssociatedTokenAccount(
     connection,
     admin,
-    rewards_mint,
+    rewardsMint,
     admin.publicKey
   );
 
@@ -102,21 +101,19 @@ describe("NFT Staking", () => {
     [
       Buffer.from("stake"),
       mint.toBuffer(),
-      config_account.toBuffer(),
+      configAccount.toBuffer(),
     ],
     program.programId
   )[0];
 
   const accountsPublicKeys = {
     user: user.publicKey,
-    stake_token: stake_token.publicKey,
-    config_account,
-    user_account,
-    rewards_mint,
-    associatedTokenprogram: ASSOCIATED_TOKEN_PROGRAM_ID,
-
+    stakeToken: stakeToken.publicKey,
+    configAccount,
+    userAccount,
+    rewardsMint,
+    associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
     tokenProgram: TOKEN_PROGRAM_ID,
-
     systemProgram: SystemProgram.programId,
   };
 
@@ -130,7 +127,7 @@ describe("NFT Staking", () => {
         6
       );
     
-      mint_ata = await getOrCreateAssociatedTokenAccount(
+      mintAta = await getOrCreateAssociatedTokenAccount(
         connection,
         user,
         mint,
@@ -146,43 +143,43 @@ describe("NFT Staking", () => {
       //   }),
       //   SystemProgram.createAccount({
       //     fromPubkey: provider.publicKey,
-      //     newAccountPubkey: stake_token.publicKey,
+      //     newAccountPubkey: stakeToken.publicKey,
       //     lamports,
       //     space: MINT_SIZE,
       //     programId: TOKEN_PROGRAM_ID,
       //   }),
       //   createInitializeMint2Instruction(
-      //     stake_token.publicKey,
+      //     stakeToken.publicKey,
       //     6,
-      //     nft_staking.publicKey,
+      //     nftStaking.publicKey,
       //     null
       //   ),
       //   createAssociatedTokenAccountIdempotentInstruction(
       //     provider.publicKey,
-      //     rewards_ata,
-      //     nft_staking.publicKey,
-      //     stake_token.publicKey
+      //     rewardsAta,
+      //     nftStaking.publicKey,
+      //     stakeToken.publicKey
       //   ),
       //   createMintToInstruction(
-      //     stake_token.publicKey,
-      //     rewards_ata,
-      //     nft_staking.publicKey,
+      //     stakeToken.publicKey,
+      //     rewardsAta,
+      //     nftStaking.publicKey,
       //     1000000000
       //   ),
       // ];
-      // await provider.sendAndConfirm(tx, [stake_token, user]).then(log);
+      // await provider.sendAndConfirm(tx, [stakeToken, user]).then(log);
     } catch (error) {
       console.error(error);
     }
   });
 
-  // it("initialize_config", async () => {
+  // it("initializeConfig", async () => {
   //   const accounts = {
   //     admin: accountsPublicKeys["user"],
-  //     configAccount: accountsPublicKeys["config_account"],
-  //     rewardsMint: accountsPublicKeys["stake_token"],
-  //     systemProgram: accountsPublicKeys["system_program"],
-  //     tokenProgram: accountsPublicKeys["token_program"],
+  //     configAccount: accountsPublicKeys["configAccount"],
+  //     rewardsMint: accountsPublicKeys["stakeToken"],
+  //     systemProgram: accountsPublicKeys["systemProgram"],
+  //     tokenProgram: accountsPublicKeys["tokenProgram"],
   //   };
   //   await program.methods
   //     .initializeConfig(null, null, null)
