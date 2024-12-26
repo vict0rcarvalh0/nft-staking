@@ -2,21 +2,15 @@ import * as anchor from "@coral-xyz/anchor";
 import { Program, BN } from "@coral-xyz/anchor";
 import {
   Keypair,
-  LAMPORTS_PER_SOL,
   PublicKey,
   SystemProgram,
-  Transaction,
+  SendTransactionError
 } from "@solana/web3.js";
 import {
   ASSOCIATED_TOKEN_PROGRAM_ID,
-  MINT_SIZE,
   TOKEN_PROGRAM_ID,
-  createAssociatedTokenAccountIdempotentInstruction,
-  createInitializeMint2Instruction,
   createMint,
-  createMintToInstruction,
   getAssociatedTokenAddressSync,
-  getMinimumBalanceForRentExemptMint,
   getOrCreateAssociatedTokenAccount,
 } from "@solana/spl-token";
 
@@ -108,12 +102,17 @@ describe("NFT Staking", () => {
 
   const accountsPublicKeys = {
     user: user.publicKey,
-    stakeToken: stakeToken.publicKey,
-    configAccount,
-    userAccount,
-    rewardsMint,
+    stake_token: stakeToken.publicKey,
+    stake_account: stakeAccount,
+    config_account: configAccount,
+    user_account: userAccount,
+    rewards_mint: rewardsMint,
+    rewards_ata: rewardsAta,
+    metadata_account: metadataAccount,
+    master_edition_account: masterEditionAccount,
     associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
     tokenProgram: TOKEN_PROGRAM_ID,
+    metadataProgram: METADATA_PROGRAM_ID,
     systemProgram: SystemProgram.programId,
   };
 
@@ -133,60 +132,98 @@ describe("NFT Staking", () => {
         mint,
         user.publicKey
       );
-      // let lamports = await getMinimumBalanceForRentExemptMint(connection);
-      // let tx = new Transaction();
-      // tx.instructions = [
-      //   SystemProgram.transfer({
-      //     fromPubkey: provider.publicKey,
-      //     toPubkey: user.publicKey,
-      //     lamports: 10 * LAMPORTS_PER_SOL,
-      //   }),
-      //   SystemProgram.createAccount({
-      //     fromPubkey: provider.publicKey,
-      //     newAccountPubkey: stakeToken.publicKey,
-      //     lamports,
-      //     space: MINT_SIZE,
-      //     programId: TOKEN_PROGRAM_ID,
-      //   }),
-      //   createInitializeMint2Instruction(
-      //     stakeToken.publicKey,
-      //     6,
-      //     nftStaking.publicKey,
-      //     null
-      //   ),
-      //   createAssociatedTokenAccountIdempotentInstruction(
-      //     provider.publicKey,
-      //     rewardsAta,
-      //     nftStaking.publicKey,
-      //     stakeToken.publicKey
-      //   ),
-      //   createMintToInstruction(
-      //     stakeToken.publicKey,
-      //     rewardsAta,
-      //     nftStaking.publicKey,
-      //     1000000000
-      //   ),
-      // ];
-      // await provider.sendAndConfirm(tx, [stakeToken, user]).then(log);
     } catch (error) {
       console.error(error);
     }
   });
 
-  // it("initializeConfig", async () => {
-  //   const accounts = {
-  //     admin: accountsPublicKeys["user"],
-  //     configAccount: accountsPublicKeys["configAccount"],
-  //     rewardsMint: accountsPublicKeys["stakeToken"],
-  //     systemProgram: accountsPublicKeys["systemProgram"],
-  //     tokenProgram: accountsPublicKeys["tokenProgram"],
-  //   };
-  //   await program.methods
-  //     .initializeConfig(null, null, null)
-  //     .accounts({ ...accounts })
-  //     .signers([admin])
-  //     .rpc()
-  //     .then(confirm)
-  //     .then(log);
-  // });
+  it("initialize config", async () => {
+    const accounts = {
+      admin: accountsPublicKeys["user"],
+      configAccount: accountsPublicKeys["config_account"],
+      rewardsMint: accountsPublicKeys["stake_token"],
+      systemProgram: accountsPublicKeys["system_program"],
+      tokenProgram: accountsPublicKeys["token_program"],
+    };
+
+    try {
+        await program.methods
+          .initializeConfig(1, 10, 30)
+          .accounts(accounts)
+          .signers([user])
+          .rpc()
+          .then(confirm)
+          .then(log);
+      }
+     catch (error) {
+      if (error instanceof SendTransactionError) {
+        const logs = await error.getLogs(provider.connection);
+        console.log("Transaction Logs:", logs);
+      }
+      console.error("Error initializing farmlink:", error);
+      throw error;
+    }
+  })
+
+  it("initialize user", async () => {
+    const accounts = {
+      user: accountsPublicKeys["user"],
+      userAccount: accountsPublicKeys["user_account"],
+      systemProgram: accountsPublicKeys["system_program"],
+    };
+
+    try {
+        await program.methods
+          .initializeUser()
+          .accounts(accounts)
+          .signers([user])
+          .rpc()
+          .then(confirm)
+          .then(log);
+      }
+     catch (error) {
+      if (error instanceof SendTransactionError) {
+        const logs = await error.getLogs(provider.connection);
+        console.log("Transaction Logs:", logs);
+      }
+      console.error("Error initializing farmlink:", error);
+      throw error;
+    }
+  })
+
+  it("stake", async () => {
+    const accounts = {
+      user: accountsPublicKeys["user"],
+      mint: accountsPublicKeys["mint"],
+      mintAta: accountsPublicKeys["mint_ata"],
+      metadataAccount: accountsPublicKeys["metadata_account"],
+      masterEditionAccount: accountsPublicKeys["master_edition_account"],
+      configAccount: accountsPublicKeys["config_account"],
+      stakeAccount: accountsPublicKeys["stake_account"],
+      userAccount: accountsPublicKeys["user_account"],
+      systemProgram: accountsPublicKeys["system_program"],
+      tokenProgram: accountsPublicKeys["token_program"],
+      metadataProgram: accountsPublicKeys["metadata_program"],
+    };
+
+    // pub collection_mint: Account<'info, Mint>,
+
+    try {
+        await program.methods
+          .stake()
+          .accounts(accounts)
+          .signers([user])
+          .rpc()
+          .then(confirm)
+          .then(log);
+      }
+     catch (error) {
+      if (error instanceof SendTransactionError) {
+        const logs = await error.getLogs(provider.connection);
+        console.log("Transaction Logs:", logs);
+      }
+      console.error("Error initializing farmlink:", error);
+      throw error;
+    }
+  })
 });
